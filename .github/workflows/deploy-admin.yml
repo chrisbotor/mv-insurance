@@ -1,0 +1,33 @@
+name: Deploy Admin CRM
+
+# This tells GitHub to ONLY run this script if you push changes to the admin_app folder
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'admin_app/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted # This tells GitHub to use your Mac Mini!
+
+    steps:
+      - name: Pull latest code
+        uses: actions/checkout@v3
+
+      - name: Build Flutter Web Presentation
+        run: |
+          cd admin_app
+          flutter build web --release
+
+      - name: Build and Push Docker Image
+        run: |
+          cd admin_app
+          # We use the GitHub commit ID to automatically version your Docker images!
+          docker build --platform linux/amd64 -t chrisbotor/mv-admin-frontend:${{ github.sha }} .
+          docker push chrisbotor/mv-admin-frontend:${{ github.sha }}
+
+      - name: Hot-Swap Kubernetes
+        run: |
+          kubectl set image deployment/admin-frontend admin-frontend=chrisbotor/mv-admin-frontend:${{ github.sha }}
