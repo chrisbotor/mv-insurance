@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/admin_screen.dart';
+import 'screens/login_screen.dart'; // Import the new login screen
 
 void main() {
   runApp(const BrightPathAdminApp());
@@ -17,7 +17,8 @@ class BrightPathAdminApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const AdminScreen(),
+      // Change this to load the LoginScreen first
+      home: const LoginScreen(),
     );
   }
 }
