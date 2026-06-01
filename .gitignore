@@ -1,0 +1,6 @@
+# .gitignore
+**/build/
+**/.dart_tool/
+**/.idea/
+**/.env
+**/.DS_Store
