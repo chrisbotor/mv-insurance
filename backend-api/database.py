@@ -11,7 +11,7 @@ def get_password_hash(password):
 
 # --- INTERNAL CLUSTER CONNECTION ---
 # Replace with your actual K8s Postgres credentials
-SQLALCHEMY_DATABASE_URL = "postgresql://your_k8s_user:your_k8s_password@my-postgres-postgresql.default.svc.cluster.local:5432/your_db_name"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:Jun3082014!@my-postgres-postgresql.default.svc.cluster.local:5432/insurance_db"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
