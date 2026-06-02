@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'admin_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dashboards.dart'; // Make sure this matches where you saved the dashboards file
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -9,30 +11,87 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Note: Even though the UI says "Corporate Email", we send it as "username" to match the FastAPI backend
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  void _handleLogin() {
-    // In the future, this will send a POST request to your FastAPI backend.
-    // For now, we simulate a 1-second loading delay.
+  // --- NEW AUTHENTICATION LOGIC ---
+  Future<void> _handleLogin() async {
+    final username = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (username.isEmpty || password.isEmpty) {
+      _showErrorDialog('Please enter both username and password.');
+      return;
+    }
+
     setState(() => _isLoading = true);
-    
-    Future.delayed(const Duration(seconds: 1), () {
+
+    try {
+      // 1. Reach out through the Cloudflare Tunnel to your Beelink cluster
+      final response = await http.post(
+        Uri.parse('https://api.brightpath-itsolutions.com/api/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+        }),
+      );
+
+      // 2. Check if the backend verified the password (Status 200 OK)
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String userRole = data['role']; // Extract the role from Postgres
+
+        if (!mounted) return;
+
+        // 3. Role-Based Routing
+        switch (userRole) {
+          case 'Super Admin':
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SuperAdminDashboard()));
+            break;
+          case 'Tier 1 Assessor':
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Tier1Dashboard()));
+            break;
+          case 'Tier 2 Support':
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Tier2Dashboard()));
+            break;
+          default:
+            _showErrorDialog('Unknown role assigned to this user.');
+        }
+      } else {
+        // Status code 401: Invalid username or password
+        if (!mounted) return;
+        _showErrorDialog('Invalid username or password.');
+      }
+    } catch (e) {
+      // Catch network errors (e.g., Beelink is offline, Cloudflare tunnel is down)
+      if (!mounted) return;
+      _showErrorDialog('Network error. Unable to reach the server.');
+    } finally {
       if (mounted) {
         setState(() => _isLoading = false);
-        // pushReplacement ensures they can't hit the "back" button to return to the login screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const AdminScreen()),
-        );
       }
-    });
+    }
   }
+
+  // Quick helper to display errors beautifully
+  void _showErrorDialog(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message), 
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+      )
+    );
+  }
+  // --- END NEW AUTHENTICATION LOGIC ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9), // Subtle grey background
+      backgroundColor: const Color(0xFFF1F5F9), 
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -72,18 +131,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
                 
-                // Email Field
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Corporate Email',
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    labelText: 'Username', // Changed from Corporate Email to match backend
+                    prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 
-                // Password Field
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
@@ -95,7 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
                 
-                // Login Button
                 SizedBox(
                   height: 48,
                   child: ElevatedButton(

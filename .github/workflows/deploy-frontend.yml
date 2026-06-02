@@ -1,0 +1,34 @@
+name: Deploy Flutter Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend_admin/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest code
+        uses: actions/checkout@v3
+
+      # Executes locally on your Mac Mini runner using your local Flutter SDK
+      - name: Compile Flutter Web App
+        run: |
+          cd frontend_admin
+          flutter pub get
+          flutter build web --release
+
+      - name: Build and Push Nginx Docker Image
+        run: |
+          cd frontend_admin
+          docker build --platform linux/amd64 -t chrisbotor/mv-frontend-admin:${{ github.sha }} .
+          docker push chrisbotor/mv-frontend-admin:${{ github.sha }}
+
+      - name: Hot-Swap Kubernetes Deployment
+        run: |
+          kubectl set image deployment/frontend-admin frontend-admin=chrisbotor/mv-frontend-admin:${{ github.sha }}
