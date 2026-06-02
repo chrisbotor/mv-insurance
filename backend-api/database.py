@@ -25,7 +25,12 @@ class Policy(Base):
     status = Column(String)
 
 def init_db():
+    # Add this line to wipe the old conflicting tables
+    Base.metadata.drop_all(bind=engine) 
+    
+    # Now it will recreate them with the correct columns
     Base.metadata.create_all(bind=engine)
+    
     db = SessionLocal()
     
     # Inject one Super Admin if the database is empty
