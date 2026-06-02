@@ -25,10 +25,12 @@ class Policy(Base):
     status = Column(String)
 
 def init_db():
-    # Add this line to wipe the old conflicting tables
-    Base.metadata.drop_all(bind=engine) 
+    # Force drop the old tables and sever any old foreign key connections (like the vehicles table)
+    with engine.begin() as conn:
+        conn.execute(text("DROP TABLE IF EXISTS users CASCADE"))
+        conn.execute(text("DROP TABLE IF EXISTS policies CASCADE"))
     
-    # Now it will recreate them with the correct columns
+    # Rebuild the fresh schema
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
