@@ -32,3 +32,5 @@ def health_check():
 def get_users(db: Session = Depends(get_db)):
     users = db.query(database.User).all()
     return {"users": users}
+
+# Trigger CI/CD
