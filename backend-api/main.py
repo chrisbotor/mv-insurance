@@ -26,6 +26,11 @@ class UserCreate(BaseModel):
     password: str
     role: str
 
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
@@ -108,3 +113,24 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(db_user)
     db.commit()
     return {"message": f"User '{db_user.username}' deleted successfully"}
+
+# 5. USER LOGIN
+@app.post("/api/login")
+def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
+    # 1. Look up the user by username
+    db_user = db.query(database.User).filter(database.User.username == user_credentials.username).first()
+    
+    # 2. If the user doesn't exist, return a generic 401 error
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+    # 3. Use passlib to verify the plain-text password against the hashed password in Postgres
+    if not database.pwd_context.verify(user_credentials.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+    # 4. If successful, return the user's role so Flutter knows where to send them
+    return {
+        "message": "Login successful", 
+        "username": db_user.username, 
+        "role": db_user.role
+    }
