@@ -1,0 +1,43 @@
+name: Deploy Flutter Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend_admin/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest code
+        uses: actions/checkout@v3
+
+      # Executes locally on your Mac Mini runner using your machine's Flutter SDK
+      - name: Compile Flutter Web App
+        run: |
+          cd frontend_admin
+          flutter pub get
+          flutter build web --release
+
+      # Packages compiled app into Nginx and pushes both unique SHA and latest tags
+      - name: Build and Push Nginx Docker Image
+        run: |
+          cd frontend_admin
+          
+          # 1. Build and tag with BOTH the commit SHA and latest fallback
+          docker build --platform linux/amd64 \
+            -t chrisbotor/mv-frontend-admin:${{ github.sha }} \
+            -t chrisbotor/mv-frontend-admin:latest .
+          
+          # 2. Push both target tags up to your Docker Hub repository
+          docker push chrisbotor/mv-frontend-admin:${{ github.sha }}
+          docker push chrisbotor/mv-frontend-admin:latest
+
+      # Tells the Beelink cluster to apply the update seamlessly to your LIVE pod
+      - name: Hot-Swap Kubernetes Deployment
+        run: |
+          kubectl set image deployment/admin-frontend "*=chrisbotor/mv-frontend-admin:${{ github.sha }}"
