@@ -1,0 +1,27 @@
+name: Deploy FastAPI Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend-api/**'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted 
+
+    steps:
+      - name: Pull latest code
+        uses: actions/checkout@v3
+
+      - name: Build and Push Docker Image
+        run: |
+          cd backend-api
+          docker build --platform linux/amd64 -t chrisbotor/mv-backend-api:${{ github.sha }} .
+          docker push chrisbotor/mv-backend-api:${{ github.sha }}
+
+      - name: Hot-Swap Kubernetes
+        run: |
+          kubectl set image deployment/backend-api backend-api=chrisbotor/mv-backend-api:${{ github.sha }}
