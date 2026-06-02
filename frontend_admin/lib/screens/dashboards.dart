@@ -127,8 +127,8 @@ Widget _buildSidebar(BuildContext context, String roleName, Color themeColor) {
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.logout, color: Colors.grey),
           title: const Text('Sign Out', style: TextStyle(color: Colors.grey)),
-          onPressed: () {
-            // Drop back to login view securely
+          onTap: () {
+            // Push replacement logs them out cleanly back to the initial login frame
             Navigator.of(context).pushReplacementNamed('/');
           },
         ),
@@ -139,7 +139,7 @@ Widget _buildSidebar(BuildContext context, String roleName, Color themeColor) {
 
 Widget _buildMainContent({required String roleTitle, required Color themeColor, required List<Widget> allowedFeatures}) {
   return Container(
-    color: const Color(0xFFF8FAFC), // Light grey content area
+    color: const Color(0xFFF8FAFC), // Light slate surface grey
     padding: const EdgeInsets.all(40),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
