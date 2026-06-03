@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // 1. Reach out through the Cloudflare Tunnel to your Beelink cluster
       final response = await http.post(
         Uri.parse('https://api-mv-insure.brightpath-itsolutions.com/api/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: jsonEncode({
           'username': username,
           'password': password,
