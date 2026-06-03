@@ -31,25 +31,18 @@ class _LoginScreenState extends State<LoginScreen> {
     //replace url to the correct one 
     try {
       // 1. Reach out through the Cloudflare Tunnel to your Beelink cluster
-      // 1. Reach out through the Cloudflare Tunnel to your Beelink cluster
       final response = await http.post(
         Uri.parse('https://api-mv-insure.brightpath-itsolutions.com/api/login'),
         headers: {
-          'Accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
         },
-        // Force Flutter to strictly encode this as form data
-        body: <String, String>{
-          'grant_type': 'password', // Sometimes FastAPI expects this explicitly
-          'username': username,
-          'password': password,
-        },
+        // THE FIX: Manually format the string so Flutter can't mess it up
+        body: 'username=${Uri.encodeComponent(username)}&password=${Uri.encodeComponent(password)}',
       );
 
-      // --- ADD THESE TWO LINES ---
       print("🚨 STATUS CODE: ${response.statusCode}");
       print("🚨 RESPONSE BODY: ${response.body}");
-      // ---------------------------
 
       // 2. Check if the backend verified the password (Status 200 OK)
       if (response.statusCode == 200) {
