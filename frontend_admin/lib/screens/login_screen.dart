@@ -17,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  // --- NEW AUTHENTICATION LOGIC ---
+  // --- NEW AUTHENTICATION LOGIC --- new logic
   Future<void> _handleLogin() async {
     final username = _emailController.text.trim();
     final password = _passwordController.text;
