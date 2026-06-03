@@ -45,3 +45,19 @@ jobs:
       - name: Verify Frontend Deployment Success
         run: |
           kubectl rollout status deployment/admin-frontend --timeout=60s
+
+      - name: Capture Crash Logs on Failure
+        if: failure()
+        run: |
+          echo "⚠️ Deployment failed! Fetching Nginx logs from the crashing frontend pod..."
+          
+          # Find the absolute newest admin-frontend pod that was just created
+          CRASHED_POD=$(kubectl get pods --sort-by=.metadata.creationTimestamp | grep admin-frontend | tail -n 1 | awk '{print $1}')
+          
+          echo "Dumping logs for: $CRASHED_POD"
+          echo "=========================================================="
+          
+          # Try to get the previous crashed instance logs, or the current failing one
+          kubectl logs $CRASHED_POD --previous || kubectl logs $CRASHED_POD
+          
+          echo "=========================================================="    
