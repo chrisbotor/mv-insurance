@@ -34,10 +34,10 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await http.post(
         Uri.parse('https://api-mv-insure.brightpath-itsolutions.com/api/login'),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: jsonEncode({
+        body: {
           'username': username,
           'password': password,
-        }),
+        },
       );
 
       // 2. Check if the backend verified the password (Status 200 OK)
@@ -49,13 +49,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // 3. Role-Based Routing
         switch (userRole) {
-          case 'Super Admin':
+          case 'super_admin':
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SuperAdminDashboard()));
             break;
-          case 'Tier 1 Assessor':
+          case 'tier_1':
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Tier1Dashboard()));
             break;
-          case 'Tier 2 Support':
+          case 'tier_2':
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Tier2Dashboard()));
             break;
           default:
