@@ -28,20 +28,30 @@ jobs:
       
       - name: Verify Backend Deployment Success
         run: |
-          kubectl rollout status deployment/backend-api --timeout=60s    
+          kubectl rollout status deployment/backend-api --timeout=60s
+          
+          echo "Rollout reported success. Waiting 15 seconds for stabilization..."
+          sleep 15
+          
+          # Manually check if any backend pods slipped into an Error state
+          CRASHING_PODS=$(kubectl get pods | grep backend-api | grep -E 'Error|CrashLoopBackOff' || true)
+          
+          if [ -n "$CRASHING_PODS" ]; then
+            echo "❌ CRITICAL: Pod crashed shortly after startup!"
+            echo "$CRASHING_PODS"
+            exit 1 # This forces the pipeline step to fail
+          else
+            echo "✅ Pods are stable and running."
+          fi
 
+      # 3. THE SAFETY NET: Capture logs if either the rollout OR stabilization fails
       - name: Capture Crash Logs on Failure
         if: failure()
         run: |
           echo "⚠️ Deployment failed! Fetching logs from the crashing pod..."
-          
-          # Find the absolute newest backend-api pod that was just created
           CRASHED_POD=$(kubectl get pods --sort-by=.metadata.creationTimestamp | grep backend-api | tail -n 1 | awk '{print $1}')
           
           echo "Dumping logs for: $CRASHED_POD"
           echo "=========================================================="
-          
-          # Try to get the previous crashed instance logs, or the current failing one
           kubectl logs $CRASHED_POD --previous || kubectl logs $CRASHED_POD
-          
-          echo "=========================================================="     
+          echo "=========================================================="
