@@ -29,3 +29,19 @@ jobs:
       - name: Verify Backend Deployment Success
         run: |
           kubectl rollout status deployment/backend-api --timeout=60s    
+
+      - name: Capture Crash Logs on Failure
+        if: failure()
+        run: |
+          echo "⚠️ Deployment failed! Fetching logs from the crashing pod..."
+          
+          # Find the absolute newest backend-api pod that was just created
+          CRASHED_POD=$(kubectl get pods --sort-by=.metadata.creationTimestamp | grep backend-api | tail -n 1 | awk '{print $1}')
+          
+          echo "Dumping logs for: $CRASHED_POD"
+          echo "=========================================================="
+          
+          # Try to get the previous crashed instance logs, or the current failing one
+          kubectl logs $CRASHED_POD --previous || kubectl logs $CRASHED_POD
+          
+          echo "=========================================================="     
