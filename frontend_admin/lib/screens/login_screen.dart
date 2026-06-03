@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dashboards.dart'; // Make sure this matches where you saved the dashboards file
+import 'package:frontend_admin/screens/client_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -62,6 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
           case 'tier_2':
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Tier2Dashboard()));
             break;
+
+          case 'client':
+            Navigator.pushReplacement(
+              context, 
+              MaterialPageRoute(builder: (_) => ClientDashboard(username: username))
+            );
+            break;
+
           default:
             _showErrorDialog('Unknown role assigned to this user.');
         }
