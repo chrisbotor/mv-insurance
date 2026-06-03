@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_admin/screens/login_screen.dart'; // Add this! (Adjust path if needed)
 
 class ClientDashboard extends StatefulWidget {
   final String username;
@@ -47,8 +48,12 @@ class _ClientDashboardState extends State<ClientDashboard> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              // TODO: Clear token and return to Login Screen
-              Navigator.pop(context);
+              // Clear the entire navigation stack and push the Login Screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (Route<dynamic> route) => false, // This forces it to wipe all previous screens
+              );
             },
           )
         ],
