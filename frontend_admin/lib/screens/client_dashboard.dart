@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_admin/screens/login_screen.dart'; // Add this! (Adjust path if needed)
+import 'package:frontend_admin/screens/damage_assessment_screen.dart'; // Adjust path if needed
 
 class ClientDashboard extends StatefulWidget {
   final String username;
@@ -76,11 +77,14 @@ class _ClientDashboardState extends State<ClientDashboard> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Open the "File a Claim / Damage Detection" flow
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const DamageAssessmentScreen()),
+          );
         },
         backgroundColor: Colors.redAccent,
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('File a Claim', style: TextStyle(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.document_scanner),
+        label: const Text('AI Damage Assessment', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
