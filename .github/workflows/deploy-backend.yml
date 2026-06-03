@@ -25,3 +25,7 @@ jobs:
       - name: Hot-Swap Kubernetes
         run: |
           kubectl set image deployment/backend-api backend-api=chrisbotor/mv-backend-api:${{ github.sha }}
+      
+      - name: Verify Backend Deployment Success
+        run: |
+          kubectl rollout status deployment/backend-api --timeout=60s    

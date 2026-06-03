@@ -41,3 +41,7 @@ jobs:
       - name: Hot-Swap Kubernetes Deployment
         run: |
           kubectl set image deployment/admin-frontend "*=chrisbotor/mv-frontend-admin:${{ github.sha }}"
+
+      - name: Verify Frontend Deployment Success
+        run: |
+          kubectl rollout status deployment/admin-frontend --timeout=60s
