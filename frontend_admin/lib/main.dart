@@ -5,6 +5,8 @@ void main() {
   runApp(const BrightPathAdminApp());
 }
 
+//Testing CI Isolation
+
 class BrightPathAdminApp extends StatelessWidget {
   const BrightPathAdminApp({Key? key}) : super(key: key);
 
