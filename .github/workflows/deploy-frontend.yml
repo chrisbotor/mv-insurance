@@ -45,7 +45,22 @@ jobs:
       - name: Verify Frontend Deployment Success
         run: |
           kubectl rollout status deployment/admin-frontend --timeout=60s
+          
+          echo "Rollout reported success. Waiting 15 seconds for stabilization..."
+          sleep 15
+          
+          # Manually check if any frontend pods slipped into an Error state
+          CRASHING_PODS=$(kubectl get pods | grep admin-frontend | grep -E 'Error|CrashLoopBackOff' || true)
+          
+          if [ -n "$CRASHING_PODS" ]; then
+            echo "❌ CRITICAL: Frontend pod crashed shortly after startup!"
+            echo "$CRASHING_PODS"
+            exit 1 # This forces the pipeline step to fail
+          else
+            echo "✅ Frontend pods are stable and running."
+          fi
 
+      # 3. THE SAFETY NET: Capture Nginx logs if either the rollout OR stabilization fails
       - name: Capture Crash Logs on Failure
         if: failure()
         run: |
@@ -60,4 +75,4 @@ jobs:
           # Try to get the previous crashed instance logs, or the current failing one
           kubectl logs $CRASHED_POD --previous || kubectl logs $CRASHED_POD
           
-          echo "=========================================================="    
+          echo "=========================================================="
