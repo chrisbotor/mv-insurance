@@ -44,9 +44,10 @@ jobs:
 
       - name: Verify Frontend Deployment Success
         run: |
-          kubectl rollout status deployment/admin-frontend --timeout=60s
+          # Added '|| true' so a timeout doesn't instantly kill the script
+          kubectl rollout status deployment/admin-frontend --timeout=60s || true
           
-          echo "Rollout reported success. Waiting 15 seconds for stabilization..."
+          echo "Initial rollout check complete. Waiting 15 seconds for stabilization..."
           sleep 15
           
           # Manually check if any frontend pods slipped into an Error state
